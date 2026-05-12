@@ -26,24 +26,37 @@ const server = http.createServer((req, res) => {
   if (extname === '.js') contentType = 'text/javascript';
   else if (extname === '.css') contentType = 'text/css';
 
-  // pipe the proper file to the res object
-  res.writeHead(200, { 'Content-Type': contentType });
-  fs.createReadStream(`${__dirname}/${filePath}`, 'utf8').pipe(res);
+  fs.readFile(`${__dirname}/${filePath}`, (err, data) => {
+    if (err) {
+      res.writeHead(404, { 'Content-Type': 'text/plain' });
+      res.end('Not found');
+      return;
+    }
+
+    res.writeHead(200, { 'Content-Type': contentType });
+    res.end(data);
+  });
 });
 
 ///////////////////////////////////////////////
 ////////////////// WS LOGIC ///////////////////
 ///////////////////////////////////////////////
 
-// TODO
-// Exercise 3: Create the WebSocket Server using the HTTP server
+const wsServer = new WebSocket.Server({ server });
 
 
-// TODO
-// Exercise 5: Respond to connection events 
-  // Exercise 6: Respond to client messages
-  // Exercise 7: Send a message back to the client, echoing the message received
-  // Exercise 8: Broadcast messages received to all other clients
+// wsServer is an instance of the ws WebSocket.Server class
+wsServer.on('connection', (socket) => {
+// this code will run each time a new client connects to the server
+  console.log('New client connected!');
+  // socket.send('Welcome to the server!'); 
+
+  socket.on('message', (data) => {
+  // the server will echo the message received back to the client
+    // socket.send('message received: ' + data); 
+    broadcast(data, socket); // broadcast the message to all other clients
+  });
+})
   
 
 ///////////////////////////////////////////////
@@ -51,12 +64,15 @@ const server = http.createServer((req, res) => {
 ///////////////////////////////////////////////
 
 function broadcast(data, socketToOmit) {
-  // TODO
-  // Exercise 8: Implement the broadcast pattern. Exclude the emitting socket!
+  // Implement the broadcast pattern. Exclude the emitting socket!
+  wsServer.clients.forEach((client) => {
+    if (client !== socketToOmit && client.readyState === WebSocket.OPEN) {
+      client.send(data);
+    }
+  });
 }
 
 // Start the server listening on localhost:8080
 server.listen(PORT, () => {
   console.log(`Listening on: http://localhost:${server.address().port}`);
 });
-
