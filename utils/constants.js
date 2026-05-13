@@ -6,10 +6,22 @@ const CLIENT = {
   }
 };
 
+const SERVER = {
+  MESSAGE: {
+
+  },
+  BROADCAST: {
+    NEW_USER_WITH_TIME: 'NEW_USER_WITH_TIME'
+  }
+}
+
+// CLIENT.MESSAGE.NEW_USER
+
 // This check allows the module to be used in the client and the server
 if (typeof module !== "undefined" && module.exports) {
   module.exports = exports = {
     PORT,
-    CLIENT
+    CLIENT,
+    SERVER
   }
 }

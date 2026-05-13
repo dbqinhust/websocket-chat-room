@@ -28,6 +28,7 @@
     // This variable will hold the WebSocket client connection. 
     // Initialize in the init() function
     let wsClient; 
+    const username = prompt('enter a username');
     
     ////////////////////////////////////////////////
     //////////////// DOM SETUP /////////////////////
@@ -78,8 +79,9 @@
         // this code will run when the client successfully connects to a server
         console.log('WebSocket connection established!');
         const data = {
-          type: 'NEW_USER',
-        };
+          type: CLIENT.MESSAGE.NEW_USER,
+          payload: { username }
+        }
         wsClient.send(JSON.stringify(data));
       }
 
@@ -90,15 +92,15 @@
         // console.log('message received: ' + message);
         // showMessageReceived(message);
         const { type, payload } = JSON.parse(message);
-        switch (type) {
-          case 'NEW_USER':
-            showMessageReceived('A new user has joined the chat!');
+        switch(type) {
+          case SERVER.BROADCAST.NEW_USER_WITH_TIME:
+            showMessageReceived('<em>' + payload.username + ' has joined at ' + payload.time + ' !</em>')
             break;
-          case 'NEW_MESSAGE':
-            showMessageReceived(payload.message);
+          case CLIENT.MESSAGE.NEW_MESSAGE:
+            showMessageReceived(`<strong>[${payload.username}]</strong> ${payload.message}`);
             break;
-          default:
-            console.error('Unknown message type received: ' + type);
+          default: 
+            break;
         }
       };
 
@@ -133,8 +135,8 @@
       // Send the message from the messageBox to the server
       // Send the message in a custom message object with .type and .payload properties
       const data = {
-                  type: 'NEW_MESSAGE',
-                  payload: { message: message }
+                  type: CLIENT.MESSAGE.NEW_MESSAGE,
+                  payload: { message: message, username }
           };
       wsClient.send(JSON.stringify(data));
 

@@ -9,7 +9,7 @@ const path = require('path');
 const WebSocket = require('ws');
 
 // You may choose to use the constants defined in the file below
-const { PORT, CLIENT } = CONSTANTS;
+const { PORT, CLIENT, SERVER } = CONSTANTS;
 
 ///////////////////////////////////////////////
 ///////////// HTTP SERVER LOGIC ///////////////
@@ -54,7 +54,24 @@ wsServer.on('connection', (socket) => {
   socket.on('message', (data) => {
   // the server will echo the message received back to the client
     // socket.send('message received: ' + data); 
-    broadcast(data, socket); // broadcast the message to all other clients
+    const { type, payload } = JSON.parse(data);
+
+    switch(type) {
+      case CLIENT.MESSAGE.NEW_USER:
+        const time = new Date().toLocaleString();
+        payload.time = time;
+        const dataWithTime = {
+          type: SERVER.BROADCAST.NEW_USER_WITH_TIME,
+          payload
+        }
+        broadcast(JSON.stringify(dataWithTime));
+        break;
+      case CLIENT.MESSAGE.NEW_MESSAGE:
+        broadcast(data, socket);
+        break;
+      default: 
+        break;
+    }
   });
 })
   
